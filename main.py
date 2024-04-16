@@ -4,20 +4,22 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from sklearn.decomposition import PCA
 from functions import Database, preprocess_data, prep_data, BunDLeNet, train_model, plotting_neuronal_behavioural, plot_latent_timeseries, plot_phase_space, rotating_plot
+import pickle
 
 sys.path.append(r'../')
 
+'''
 ### Load Data (excluding behavioural neurons) and plot
 worm_num = 0
 b_neurons = [
-	'AVAR',
-	'AVAL',
-	'SMDVR',
-	'SMDVL',
-	'SMDDR',
-	'SMDDL',
-	'RIBR',
-	'RIBL'
+ 	'AVAR',
+ 	'AVAL',
+ 	'SMDVR',
+ 	'SMDVL',
+ 	'SMDDR',
+ 	'SMDDL',
+ 	'RIBR',
+ 	'RIBL'
 ]
 data = Database(data_set_no=worm_num)
 data.exclude_neurons(b_neurons)
@@ -25,9 +27,51 @@ X = data.neuron_traces.T
 B = data.states
 state_names = ['Dorsal turn', 'Forward', 'No state', 'Reverse-1', 'Reverse-2', 'Sustained reversal', 'Slowing', 'Ventral turn']
 plotting_neuronal_behavioural(X, B, state_names=state_names)
+'''
+#%% Prepare LETITGO Data
+
+# Load data file
+data_file = 'D:\LETITGO\LETITGO_001_MaZw\LETITGO_001_MaZw_ses_2_bundle-net.pickle'
+try:
+    file_to_read = open(data_file, "rb")
+    data_dict = pickle.load(file_to_read)
+    file_to_read.close()
+except Exception as err:
+    print(err)
+
+# Define data variables
+time_all = data_dict['time']
+X_all = data_dict['X']
+B_all = data_dict['B']
+
+# Take only first run
+i_start, i_stop = np.where(B_all == 1)[0][0], np.where(B_all == 2)[0][0]
+B = B_all[i_start:i_stop]
+time = time_all[i_start:i_stop]
+X = X_all[i_start:i_stop,:]
+
+# Remove 'start recording' state
+i_cut = np.where(B == 1)[0][-1]+1
+B = B[i_cut:]
+time = time[i_cut:]
+X = X[i_cut:,:]
+
+# Apply new order to states
+state_vars = np.unique(B)
+for i_state in range(len(state_vars)):
+    B[B == state_vars[i_state]] = i_state + 1
+B = B.astype(np.int32)
+
+state_names = ['close_cross', 'close_cue', 'close_plan', 'close_task_medium', 'close_rest', 'close_task_high', 'close_task_low',
+               'open_cross', 'open_cue', 'open_plan', 'open_task_medium', 'open_rest', 'open_task_high', 'open_task_low']
+
+plotting_neuronal_behavioural(X, B, state_names=state_names)
+
+
+#%% Apply Bundle Net
 
 ### Preprocess and prepare data for BundLe Net
-time, X = preprocess_data(X, data.fps)
+# time, X = preprocess_data(X, float(data.fps))
 X_, B_ = prep_data(X, B, win=15)
 
 ### Deploy BunDLe Net

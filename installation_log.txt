@@ -1,0 +1,41 @@
+Errors/fixes:
+=================================================================================================================================
+
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+moviepy 1.0.3 requires imageio<3.0,>=2.5; python_version >= "3.4", which is not installed.
+questplus 2023.1 requires xarray, which is not installed.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+pip install imageio
+pip install xarray
+
+=================================================================================================================================
+  File ~\anaconda3\envs\py31013\lib\site-packages\spyder_kernels\py3compat.py:356 in compat_exec
+    exec(code, globals, locals)
+
+  File c:\users\philipp raggam\documents\github\bundle-net\main.py:30
+    time, X = preprocess_data(X, data.fps)
+
+  File ~\Documents\GitHub\BunDLe-Net\functions.py:167 in preprocess_data
+    filtered = bandpass(X.T, f_l=1e-10, f_h=0.05, sampling_freq=fps).T
+
+  File ~\Documents\GitHub\BunDLe-Net\functions.py:148 in bandpass
+    sos = signal.butter(4, [cut_off_l, cut_off_h], 'bandpass', fs=sampling_freq, output='sos')
+
+  File ~\anaconda3\envs\py31013\lib\site-packages\scipy\signal\_filter_design.py:3229 in butter
+    return iirfilter(N, Wn, btype=btype, analog=analog,
+
+  File ~\anaconda3\envs\py31013\lib\site-packages\scipy\signal\_filter_design.py:2561 in iirfilter
+    fs = _validate_fs(fs, allow_none=True)
+
+  File ~\anaconda3\envs\py31013\lib\site-packages\scipy\signal\_arraytools.py:262 in _validate_fs
+    raise ValueError("Sampling frequency fs must be a single scalar.")
+
+ValueError: Sampling frequency fs must be a single scalar.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+File c:\users\philipp raggam\documents\github\bundle-net\main.py:30
+    time, X = preprocess_data(X, float(data.fps))
+  
